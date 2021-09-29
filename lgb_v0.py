@@ -164,21 +164,36 @@ if __name__ == '__main__':
     y_internet = train_internet_less['isDefault'].values
 
     # 交叉验证lightgbm
-    scores = []
-    skf = StratifiedKFold(n_splits=5, random_state=1, shuffle=True)
-    count = 0
-    for train_index, valid_index in skf.split(X_train, y_train):
-        count += 1
-        logger.info(f'train k fold {count}')
-        X_more, X_less = X_train[train_index], X_train[valid_index]
-        y_more, y_less = y_train[train_index], y_train[valid_index]
-        X_more_internet = np.concatenate([X_more, X_internet])
-        y_more_internet = np.concatenate([y_more, y_internet])
-        clf = LGBMClassifier(random_state=1)
-        clf.fit(X_more_internet, y_more_internet)
-        y_proba = clf.predict_proba(X_less)[:, 1]
-        score = roc_auc_score(y_less, y_proba)
-        scores.append(score)
-    scores = np.array(scores)
-    logger.info(scores)
-    logger.info(scores.mean())
+    grid = [{
+        'num_leaves': [5, 10, 20, 30],
+        'learning_rate': [0.01, 0.03, 0.1, 0.3],
+        'reg_alpha': [0, 0.1, 0.2],
+        'reg_lambda': [0, 0.1, 0.2]
+    }]
+    score_detail = []
+    best_score = 0
+    for param in ParameterGrid(grid):
+        logger.info(param)
+        param['random_state'] = 1
+        scores = []
+        skf = StratifiedKFold(n_splits=5, random_state=1, shuffle=True)
+        count = 0
+        for train_index, valid_index in skf.split(X_train, y_train):
+            count += 1
+            logger.info(f'train k fold {count}')
+            X_more, X_less = X_train[train_index], X_train[valid_index]
+            y_more, y_less = y_train[train_index], y_train[valid_index]
+            X_more_internet = np.concatenate([X_more, X_internet])
+            y_more_internet = np.concatenate([y_more, y_internet])
+            clf = LGBMClassifier(**param)
+            clf.fit(X_more_internet, y_more_internet)
+            y_proba = clf.predict_proba(X_less)[:, 1]
+            score = roc_auc_score(y_less, y_proba)
+            scores.append(score)
+        scores = np.array(scores)
+        logger.info(scores)
+        logger.info(scores.mean())
+        if scores.mean() > best_score:
+            best_score = scores.mean()
+            logger.info(f'best score {best_score}')
+        score_detail.append([param, scores, scores.mean()])
