@@ -1,2 +1,6 @@
 __pycache__
 log
+train_dataset.zip
+train_internet.csv
+train_public.csv
+test_public.csv
