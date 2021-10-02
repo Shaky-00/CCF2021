@@ -156,6 +156,7 @@ if __name__ == '__main__':
     train_internet_less['work_year'] = train_internet_less['work_year'].apply(work_year_apply)
 
     # 去除非数值类型特征
+    # 这一句没看明白是筛掉了哪几列
     drop_cols = list(train_public_less.select_dtypes('object').columns) + ['isDefault']
 
     # 构造模型数据
