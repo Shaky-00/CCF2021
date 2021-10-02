@@ -1,4 +1,4 @@
-DATA_DIR = '~/workspace/data_fountain/ccf_bdci/credit_default/'
+DATA_DIR = '.'
 
 TRAIN_PUBLIC_PATH = f'{DATA_DIR}/train_public.csv'
 TRAIN_INTERNET_PATH = f'{DATA_DIR}/train_internet.csv'
